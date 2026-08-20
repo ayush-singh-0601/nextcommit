@@ -17,3 +17,4 @@ export * from "./scan.js";
 export * from "./agent.js";
 export * from "./portfolio.js";
 export * from "./portfolio-analysis.js";
+export * from "./health.js";
