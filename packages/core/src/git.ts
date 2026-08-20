@@ -24,7 +24,8 @@ export interface GitMetadata {
 }
 
 export async function runGit(repositoryPath: string, args: string[]): Promise<string> {
-  const result = await execFileAsync("git", ["-C", repositoryPath, ...args], {
+  const normalizedPath = await realpath(repositoryPath);
+  const result = await execFileAsync("git", ["-C", normalizedPath, ...args], {
     encoding: "utf8",
     windowsHide: true,
     maxBuffer: 1024 * 1024,
@@ -32,7 +33,7 @@ export async function runGit(repositoryPath: string, args: string[]): Promise<st
       ...process.env,
       GIT_CONFIG_COUNT: "1",
       GIT_CONFIG_KEY_0: "safe.directory",
-      GIT_CONFIG_VALUE_0: repositoryPath,
+      GIT_CONFIG_VALUE_0: normalizedPath,
     },
   });
   return result.stdout.trim();
