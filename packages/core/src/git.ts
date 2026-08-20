@@ -19,6 +19,12 @@ export async function runGit(repositoryPath: string, args: string[]): Promise<st
     encoding: "utf8",
     windowsHide: true,
     maxBuffer: 1024 * 1024,
+    env: {
+      ...process.env,
+      GIT_CONFIG_COUNT: "1",
+      GIT_CONFIG_KEY_0: "safe.directory",
+      GIT_CONFIG_VALUE_0: repositoryPath,
+    },
   });
   return result.stdout.trim();
 }
