@@ -1,6 +1,6 @@
 import { Command } from "commander";
 import pc from "picocolors";
-import { loadFindings, PRODUCT_NAME, RepositoryError, scanRepository, type Finding, type FindingCategory, type ScanReport } from "@nextcommit/core";
+import { loadFindings, PRODUCT_NAME, RepositoryError, saveAgentAnalysis, scanRepository, type Finding, type FindingCategory, type ScanReport } from "@nextcommit/core";
 
 export * from "@nextcommit/core";
 
@@ -15,6 +15,16 @@ export function renderReport(report: ScanReport, limit = 5): string {
 export function renderFinding(finding: Finding): string {
   const evidence = finding.evidence.map((item) => `${item.file}${item.lineStart ? `:${item.lineStart}` : ""}`).join(", ");
   return `${finding.title}\n${finding.category} · ${finding.classification} · score ${finding.score}\nEvidence: ${evidence}\n${finding.reason}\n`;
+}
+
+function readStandardInput(): Promise<string> {
+  return new Promise((resolve, reject) => {
+    let value = "";
+    process.stdin.setEncoding("utf8");
+    process.stdin.on("data", (chunk: string) => { value += chunk; });
+    process.stdin.once("end", () => resolve(value));
+    process.stdin.once("error", reject);
+  });
 }
 
 export async function runCli(argv = process.argv): Promise<void> {
@@ -38,6 +48,11 @@ export async function runCli(argv = process.argv): Promise<void> {
   for (const [command, category] of Object.entries(categoryCommands)) program.command(`${command} [path]`).action((target = ".") => renderStored(target, category));
   program.command("show <id> [path]").action((id, target = ".") => renderStored(target, undefined, id));
   program.command("quick-wins [path]").action((target = ".") => renderStored(target, undefined, undefined, true));
+  program.command("agent ingest [path]").description("persist a verified analysis envelope from stdin").action(async (target = ".") => {
+    const report = await scanRepository(target, { persistState: false });
+    const saved = await saveAgentAnalysis(report.repository.root, JSON.parse(await readStandardInput()));
+    process.stdout.write(`${JSON.stringify({ findings: saved.findings.length, plans: saved.plans.length })}\n`);
+  });
   program.option("--json", "emit stable JSON").option("--limit <count>", "limit candidates", Number).action(() => executeScan(".", program.opts()));
   try {
     await program.parseAsync(argv);
