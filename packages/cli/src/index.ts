@@ -1,6 +1,6 @@
 import { Command } from "commander";
 import pc from "picocolors";
-import { addPortfolioRoot, completeFinding, discoverRepositories, globalStateDirectory, ignoreFinding, loadFindings, loadPlan, loadPortfolioConfig, PRODUCT_NAME, RepositoryError, saveAgentAnalysis, scanRepository, type Finding, type FindingCategory, type ScanReport } from "../../core/src/index.js";
+import { addPortfolioRoot, completeFinding, discoverRepositories, filterByTimeBudget, globalStateDirectory, ignoreFinding, loadFindings, loadPlan, loadPortfolioConfig, parseTimeBudget, PRODUCT_NAME, RepositoryError, saveAgentAnalysis, scanRepository, type Finding, type FindingCategory, type ScanReport } from "../../core/src/index.js";
 
 export * from "../../core/src/index.js";
 
@@ -48,6 +48,13 @@ export async function runCli(argv = process.argv): Promise<void> {
   for (const [command, category] of Object.entries(categoryCommands)) program.command(`${command} [path]`).action((target = ".") => renderStored(target, category));
   program.command("show <id> [path]").action((id, target = ".") => renderStored(target, undefined, id));
   program.command("quick-wins [path]").action((target = ".") => renderStored(target, undefined, undefined, true));
+  program.command("time <budget> [path]").description("show verified work that fits a time budget").action(async (budget, target = ".") => {
+    const parsed = parseTimeBudget(budget);
+    if (!parsed) throw new Error("Time budget must be hour, evening, or weekend");
+    const report = await scanRepository(target, { persistState: false });
+    const findings = filterByTimeBudget(await loadFindings(report.repository.root), parsed);
+    process.stdout.write(`${findings.slice(0, 5).map(renderFinding).join("\\n") || "No verified findings fit this budget.\\n"}`);
+  });
   program.command("init [path]").description("add a directory to the global portfolio").action(async (target = ".") => {
     const config = await addPortfolioRoot(target);
     process.stdout.write(`Added ${config.roots.at(-1)} to ${globalStateDirectory()}\\n`);
