@@ -1,0 +1,8 @@
+node_modules/
+dist/
+coverage/
+.nextcommit/
+*.tgz
+*.log
+.DS_Store
+
