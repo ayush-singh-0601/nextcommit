@@ -63,12 +63,13 @@ export async function detectStack(files: IndexedFile[]): Promise<StackInfo> {
   if (paths.has("Cargo.toml")) frameworks.add("rust");
   if (paths.has("go.mod")) frameworks.add("go");
 
-  const packageManager = [
+  const packageManagers = [
     ["pnpm-lock.yaml", "pnpm"],
     ["yarn.lock", "yarn"],
     ["package-lock.json", "npm"],
     ["bun.lockb", "bun"],
-  ].find(([lockfile]) => paths.has(lockfile))?.[1];
+  ] as const;
+  const packageManager = packageManagers.find(([lockfile]) => paths.has(lockfile))?.[1];
 
   return {
     languages: [...languages].sort(),

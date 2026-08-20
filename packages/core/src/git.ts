@@ -32,8 +32,9 @@ export async function runGit(repositoryPath: string, args: string[]): Promise<st
 export async function resolveRepository(inputPath: string): Promise<ResolvedRepository> {
   const absoluteInput = path.resolve(inputPath);
   try {
-    const root = await runGit(absoluteInput, ["rev-parse", "--show-toplevel"]);
-    return { inputPath: await realpath(absoluteInput), root: await realpath(root) };
+    const normalizedInput = await realpath(absoluteInput);
+    const root = await runGit(normalizedInput, ["rev-parse", "--show-toplevel"]);
+    return { inputPath: normalizedInput, root: await realpath(root) };
   } catch {
     throw new RepositoryError(`NextCommit requires a Git repository: ${absoluteInput}`);
   }

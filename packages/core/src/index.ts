@@ -6,3 +6,4 @@ export * from "./schema.js";
 export * from "./git.js";
 export * from "./files.js";
 export * from "./stack.js";
+export * from "./structure.js";
