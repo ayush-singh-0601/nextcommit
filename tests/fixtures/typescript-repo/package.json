@@ -1,0 +1,7 @@
+{
+  "name": "fixture-typescript",
+  "scripts": {
+    "test": "vitest run"
+  }
+}
+

@@ -1,0 +1,4 @@
+[project]
+name = "fixture-python"
+requires-python = ">=3.11"
+
