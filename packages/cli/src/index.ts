@@ -26,16 +26,18 @@ export async function runCli(argv = process.argv): Promise<void> {
     const report = await scanRepository(target, { persistState: true });
     process.stdout.write(effectiveOptions.json ? `${JSON.stringify(report, null, 2)}\n` : renderReport(report, effectiveOptions.limit));
   };
-  const renderStored = async (target: string, category?: FindingCategory, id?: string) => {
+  const renderStored = async (target: string, category?: FindingCategory, id?: string, quickWins = false) => {
     const report = await scanRepository(target, { persistState: false });
-    const findings = (await loadFindings(report.repository.root)).filter((finding) => !category || finding.category === category);
+    const findings = (await loadFindings(report.repository.root)).filter((finding) => (!category || finding.category === category) && (!quickWins || (finding.impact >= 7 && finding.effort <= 3 && finding.confidence >= 0.8 && finding.risk === "low")));
     const selected = id ? findings.find((finding) => finding.id === id) : undefined;
     if (id && !selected) throw new Error(`Finding not found: ${id}`);
     process.stdout.write(selected ? renderFinding(selected) : `${findings.slice(0, 5).map(renderFinding).join("\n") || "No verified findings yet.\n"}`);
   };
   program.command("scan [path]").option("--json", "emit stable JSON").option("--limit <count>", "limit candidates", Number).action(executeScan);
-  for (const category of ["bug", "feature", "performance", "test", "maintainability"] as const) program.command(`${category}s [path]`).action((target = ".") => renderStored(target, category));
+  const categoryCommands: Record<string, FindingCategory> = { bugs: "bug", features: "feature", performance: "performance", tests: "test", maintainability: "maintainability" };
+  for (const [command, category] of Object.entries(categoryCommands)) program.command(`${command} [path]`).action((target = ".") => renderStored(target, category));
   program.command("show <id> [path]").action((id, target = ".") => renderStored(target, undefined, id));
+  program.command("quick-wins [path]").action((target = ".") => renderStored(target, undefined, undefined, true));
   program.option("--json", "emit stable JSON").option("--limit <count>", "limit candidates", Number).action(() => executeScan(".", program.opts()));
   try {
     await program.parseAsync(argv);
