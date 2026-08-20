@@ -19,3 +19,4 @@ export * from "./portfolio.js";
 export * from "./portfolio-analysis.js";
 export * from "./health.js";
 export * from "./revival.js";
+export * from "./priorities.js";
