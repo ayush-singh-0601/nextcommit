@@ -7,7 +7,7 @@ import { readJson, writeJsonAtomic } from "./state.js";
 export interface PortfolioConfig { version: 1; roots: string[] }
 export interface DiscoveredRepository { path: string; name: string }
 
-export function globalStateDirectory(): string { return path.join(os.homedir(), ".nextcommit"); }
+export function globalStateDirectory(): string { return process.env.NEXTCOMMIT_HOME ? path.resolve(process.env.NEXTCOMMIT_HOME) : path.join(os.homedir(), ".nextcommit"); }
 export async function loadPortfolioConfig(directory = globalStateDirectory()): Promise<PortfolioConfig> {
   return (await readJson<PortfolioConfig>(path.join(directory, "config.json"))) ?? { version: 1, roots: [] };
 }

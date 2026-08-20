@@ -1,6 +1,6 @@
 import { Command } from "commander";
 import pc from "picocolors";
-import { completeFinding, ignoreFinding, loadFindings, loadPlan, PRODUCT_NAME, RepositoryError, saveAgentAnalysis, scanRepository, type Finding, type FindingCategory, type ScanReport } from "../../core/src/index.js";
+import { addPortfolioRoot, completeFinding, discoverRepositories, globalStateDirectory, ignoreFinding, loadFindings, loadPlan, loadPortfolioConfig, PRODUCT_NAME, RepositoryError, saveAgentAnalysis, scanRepository, type Finding, type FindingCategory, type ScanReport } from "../../core/src/index.js";
 
 export * from "../../core/src/index.js";
 
@@ -48,6 +48,16 @@ export async function runCli(argv = process.argv): Promise<void> {
   for (const [command, category] of Object.entries(categoryCommands)) program.command(`${command} [path]`).action((target = ".") => renderStored(target, category));
   program.command("show <id> [path]").action((id, target = ".") => renderStored(target, undefined, id));
   program.command("quick-wins [path]").action((target = ".") => renderStored(target, undefined, undefined, true));
+  program.command("init [path]").description("add a directory to the global portfolio").action(async (target = ".") => {
+    const config = await addPortfolioRoot(target);
+    process.stdout.write(`Added ${config.roots.at(-1)} to ${globalStateDirectory()}\\n`);
+  });
+  program.command("portfolio").description("list repositories discovered from configured roots").option("--json", "emit stable JSON").action(async (options) => {
+    const config = await loadPortfolioConfig();
+    const repositories = (await Promise.all(config.roots.map((root) => discoverRepositories(root)))).flat();
+    const unique = [...new Map(repositories.map((repository) => [repository.path, repository])).values()];
+    process.stdout.write(options.json ? `${JSON.stringify({ roots: config.roots, repositories: unique }, null, 2)}\\n` : `${unique.map((repository) => repository.path).join("\\n") || "No portfolio roots configured."}\\n`);
+  });
   program.command("agent ingest [path]").description("persist a verified analysis envelope from stdin").action(async (target = ".") => {
     const report = await scanRepository(target, { persistState: false });
     const saved = await saveAgentAnalysis(report.repository.root, JSON.parse(await readStandardInput()));
