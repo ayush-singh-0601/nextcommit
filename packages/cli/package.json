@@ -1,7 +1,15 @@
 {
   "name": "nextcommit",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Give every repository a next step.",
+  "license": "MIT",
+  "keywords": ["cli", "git", "repository", "codex", "developer-tools"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ayush-singh-0601/nextcommit.git"
+  },
+  "bugs": { "url": "https://github.com/ayush-singh-0601/nextcommit/issues" },
+  "homepage": "https://github.com/ayush-singh-0601/nextcommit#readme",
   "type": "module",
   "bin": {
     "nextcommit": "./dist/cli/src/bin.js"
