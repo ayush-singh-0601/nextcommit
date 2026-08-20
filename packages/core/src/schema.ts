@@ -79,6 +79,13 @@ export const PlanSchema = z.object({
   commitSequence: z.array(z.string().min(1)).default([]),
 });
 
+export const AgentAnalysisEnvelopeSchema = z.object({
+  schemaVersion: z.literal(1),
+  repositoryFingerprint: z.string().min(1),
+  findings: z.array(FindingSchema),
+  plans: z.array(PlanSchema).default([]),
+});
+
 export const ScanReportSchema = z.object({
   schemaVersion: z.literal(1),
   repository: RepositorySchema,
@@ -95,4 +102,5 @@ export type Repository = z.infer<typeof RepositorySchema>;
 export type Candidate = z.infer<typeof CandidateSchema>;
 export type Finding = z.infer<typeof FindingSchema>;
 export type Plan = z.infer<typeof PlanSchema>;
+export type AgentAnalysisEnvelope = z.infer<typeof AgentAnalysisEnvelopeSchema>;
 export type ScanReport = z.infer<typeof ScanReportSchema>;
