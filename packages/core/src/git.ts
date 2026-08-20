@@ -14,6 +14,14 @@ export interface ResolvedRepository {
   root: string;
 }
 
+export interface GitMetadata {
+  head?: string;
+  branch?: string;
+  dirty: boolean;
+  lastCommitAt?: string;
+  recentCommitCount: number;
+}
+
 export async function runGit(repositoryPath: string, args: string[]): Promise<string> {
   const result = await execFileAsync("git", ["-C", repositoryPath, ...args], {
     encoding: "utf8",
@@ -38,4 +46,19 @@ export async function resolveRepository(inputPath: string): Promise<ResolvedRepo
   } catch {
     throw new RepositoryError(`NextCommit requires a Git repository: ${absoluteInput}`);
   }
+}
+
+export async function collectGitMetadata(repositoryPath: string): Promise<GitMetadata> {
+  const [head, branch, status, lastCommitAt, recent] = await Promise.all([
+    runGit(repositoryPath, ["rev-parse", "HEAD"]).catch(() => ""),
+    runGit(repositoryPath, ["branch", "--show-current"]).catch(() => ""),
+    runGit(repositoryPath, ["status", "--porcelain"]),
+    runGit(repositoryPath, ["log", "-1", "--format=%cI"]).catch(() => ""),
+    runGit(repositoryPath, ["rev-list", "--count", "HEAD"]).catch(() => "0"),
+  ]);
+  const metadata: GitMetadata = { dirty: status.length > 0, recentCommitCount: Number.parseInt(recent, 10) || 0 };
+  if (head) metadata.head = head;
+  if (branch) metadata.branch = branch;
+  if (lastCommitAt) metadata.lastCommitAt = lastCommitAt;
+  return metadata;
 }
