@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-import { PRODUCT_NAME } from "@nextcommit/core";
+import { runCli } from "./index.js";
 
-process.stdout.write(`${PRODUCT_NAME}\n`);
-
+void runCli();
