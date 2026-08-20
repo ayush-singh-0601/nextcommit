@@ -13,3 +13,4 @@ export * from "./manifests.js";
 export * from "./findings.js";
 export * from "./scoring.js";
 export * from "./state.js";
+export * from "./scan.js";
