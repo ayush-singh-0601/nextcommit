@@ -1,8 +1,8 @@
 import { Command } from "commander";
 import pc from "picocolors";
-import { completeFinding, ignoreFinding, loadFindings, loadPlan, PRODUCT_NAME, RepositoryError, saveAgentAnalysis, scanRepository, type Finding, type FindingCategory, type ScanReport } from "@nextcommit/core";
+import { completeFinding, ignoreFinding, loadFindings, loadPlan, PRODUCT_NAME, RepositoryError, saveAgentAnalysis, scanRepository, type Finding, type FindingCategory, type ScanReport } from "../../core/src/index.js";
 
-export * from "@nextcommit/core";
+export * from "../../core/src/index.js";
 
 export function renderReport(report: ScanReport, limit = 5): string {
   const candidates = report.candidates.slice(0, limit);
