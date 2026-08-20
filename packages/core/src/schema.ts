@@ -89,6 +89,7 @@ export const ScanReportSchema = z.object({
 });
 
 export type Evidence = z.infer<typeof EvidenceSchema>;
+export type FindingCategory = z.infer<typeof FindingCategorySchema>;
 export type Signal = z.infer<typeof SignalSchema>;
 export type Repository = z.infer<typeof RepositorySchema>;
 export type Candidate = z.infer<typeof CandidateSchema>;

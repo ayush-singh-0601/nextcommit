@@ -1,6 +1,6 @@
 import { Command } from "commander";
 import pc from "picocolors";
-import { PRODUCT_NAME, RepositoryError, scanRepository, type ScanReport } from "@nextcommit/core";
+import { loadFindings, PRODUCT_NAME, RepositoryError, scanRepository, type Finding, type FindingCategory, type ScanReport } from "@nextcommit/core";
 
 export * from "@nextcommit/core";
 
@@ -12,6 +12,11 @@ export function renderReport(report: ScanReport, limit = 5): string {
   return `${lines.join("\n")}\n`;
 }
 
+export function renderFinding(finding: Finding): string {
+  const evidence = finding.evidence.map((item) => `${item.file}${item.lineStart ? `:${item.lineStart}` : ""}`).join(", ");
+  return `${finding.title}\n${finding.category} · ${finding.classification} · score ${finding.score}\nEvidence: ${evidence}\n${finding.reason}\n`;
+}
+
 export async function runCli(argv = process.argv): Promise<void> {
   const program = new Command();
   program.name("nextcommit").description("Give every repository a next step.").version("0.1.0-dev");
@@ -21,7 +26,16 @@ export async function runCli(argv = process.argv): Promise<void> {
     const report = await scanRepository(target, { persistState: true });
     process.stdout.write(effectiveOptions.json ? `${JSON.stringify(report, null, 2)}\n` : renderReport(report, effectiveOptions.limit));
   };
+  const renderStored = async (target: string, category?: FindingCategory, id?: string) => {
+    const report = await scanRepository(target, { persistState: false });
+    const findings = (await loadFindings(report.repository.root)).filter((finding) => !category || finding.category === category);
+    const selected = id ? findings.find((finding) => finding.id === id) : undefined;
+    if (id && !selected) throw new Error(`Finding not found: ${id}`);
+    process.stdout.write(selected ? renderFinding(selected) : `${findings.slice(0, 5).map(renderFinding).join("\n") || "No verified findings yet.\n"}`);
+  };
   program.command("scan [path]").option("--json", "emit stable JSON").option("--limit <count>", "limit candidates", Number).action(executeScan);
+  for (const category of ["bug", "feature", "performance", "test", "maintainability"] as const) program.command(`${category}s [path]`).action((target = ".") => renderStored(target, category));
+  program.command("show <id> [path]").action((id, target = ".") => renderStored(target, undefined, id));
   program.option("--json", "emit stable JSON").option("--limit <count>", "limit candidates", Number).action(() => executeScan(".", program.opts()));
   try {
     await program.parseAsync(argv);
