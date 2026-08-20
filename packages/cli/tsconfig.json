@@ -3,11 +3,11 @@
   "compilerOptions": {
     "composite": true,
     "rootDir": "src",
-    "outDir": "dist"
+    "outDir": "dist",
+    "tsBuildInfoFile": ".cache/tsconfig.tsbuildinfo"
   },
   "references": [
     { "path": "../core" }
   ],
   "include": ["src/**/*.ts"]
 }
-

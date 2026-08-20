@@ -1,8 +1,9 @@
 node_modules/
 dist/
 coverage/
+.cache/
 .nextcommit/
+*.tsbuildinfo
 *.tgz
 *.log
 .DS_Store
-
