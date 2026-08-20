@@ -1,4 +1,7 @@
-import { parse } from "../src/index.js";
+import { describe, expect, it } from "vitest";
 
-void parse;
-
+describe("fixture test", () => {
+  it("documents a discoverable test location", () => {
+    expect(true).toBe(true);
+  });
+});
