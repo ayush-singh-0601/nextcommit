@@ -2,6 +2,7 @@ import { execFile } from "node:child_process";
 import { realpath } from "node:fs/promises";
 import path from "node:path";
 import { promisify } from "node:util";
+import type { Signal } from "./schema.js";
 
 const execFileAsync = promisify(execFile);
 
@@ -61,4 +62,20 @@ export async function collectGitMetadata(repositoryPath: string): Promise<GitMet
   if (branch) metadata.branch = branch;
   if (lastCommitAt) metadata.lastCommitAt = lastCommitAt;
   return metadata;
+}
+
+export async function collectChurnSignals(repositoryPath: string, limit = 25): Promise<Signal[]> {
+  const output = await runGit(repositoryPath, ["log", `-${limit}`, "--name-only", "--format="]);
+  const counts = new Map<string, number>();
+  for (const file of output.split(/\r?\n/).filter(Boolean)) counts.set(file, (counts.get(file) ?? 0) + 1);
+  return [...counts.entries()]
+    .filter(([, count]) => count >= 2)
+    .sort((left, right) => right[1] - left[1])
+    .slice(0, 10)
+    .map(([file, count]) => ({
+      type: "high-churn-file",
+      file,
+      value: `Modified in ${count} recent commits`,
+      evidence: { type: "git", file, summary: `Modified in ${count} recent commits` },
+    }));
 }
