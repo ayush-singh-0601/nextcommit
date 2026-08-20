@@ -1,6 +1,6 @@
 import { Command } from "commander";
 import pc from "picocolors";
-import { loadFindings, PRODUCT_NAME, RepositoryError, saveAgentAnalysis, scanRepository, type Finding, type FindingCategory, type ScanReport } from "@nextcommit/core";
+import { completeFinding, ignoreFinding, loadFindings, loadPlan, PRODUCT_NAME, RepositoryError, saveAgentAnalysis, scanRepository, type Finding, type FindingCategory, type ScanReport } from "@nextcommit/core";
 
 export * from "@nextcommit/core";
 
@@ -52,6 +52,21 @@ export async function runCli(argv = process.argv): Promise<void> {
     const report = await scanRepository(target, { persistState: false });
     const saved = await saveAgentAnalysis(report.repository.root, JSON.parse(await readStandardInput()));
     process.stdout.write(`${JSON.stringify({ findings: saved.findings.length, plans: saved.plans.length })}\n`);
+  });
+  program.command("ignore <id> [path]").option("--reason <reason>", "record why the finding is ignored").action(async (id, target = ".", options) => {
+    const report = await scanRepository(target, { persistState: false });
+    await ignoreFinding(report.repository.root, id, options.reason);
+    process.stdout.write(`Ignored ${id}\n`);
+  });
+  program.command("complete <id> [path]").action(async (id, target = ".") => {
+    const report = await scanRepository(target, { persistState: false });
+    await completeFinding(report.repository.root, id, []);
+    process.stdout.write(`Completed ${id}\n`);
+  });
+  program.command("plan <id> [path]").action(async (id, target = ".") => {
+    const report = await scanRepository(target, { persistState: false });
+    const plan = await loadPlan(report.repository.root, id);
+    process.stdout.write(plan ? `${plan.steps.map((step, index) => `${index + 1}. ${step}`).join("\n")}\n` : `No stored plan for ${id}. Use the Codex skill to generate one.\n`);
   });
   program.option("--json", "emit stable JSON").option("--limit <count>", "limit candidates", Number).action(() => executeScan(".", program.opts()));
   try {
