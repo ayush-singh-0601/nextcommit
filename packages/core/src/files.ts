@@ -3,6 +3,8 @@ import path from "node:path";
 import fastGlob from "fast-glob";
 import ignore from "ignore";
 
+export const MAX_TEXT_FILE_SIZE = 1024 * 1024;
+
 const DEFAULT_IGNORES = [
   ".git/**",
   "node_modules/**",
@@ -23,6 +25,44 @@ export interface IndexedFile {
   absolutePath: string;
   relativePath: string;
   size: number;
+}
+
+export interface FileSelection {
+  files: IndexedFile[];
+  skipped: Array<{ file: string; reason: "sensitive" | "binary" | "oversized" }>;
+}
+
+export function isSensitivePath(relativePath: string): boolean {
+  const basename = path.posix.basename(relativePath).toLowerCase();
+  return (
+    basename === ".env" ||
+    basename.startsWith(".env.") ||
+    basename.endsWith(".pem") ||
+    basename.endsWith(".key") ||
+    basename.startsWith("credentials") ||
+    basename.startsWith("secrets")
+  );
+}
+
+export async function isLikelyBinary(absolutePath: string): Promise<boolean> {
+  const chunk = await readFile(absolutePath, { encoding: null });
+  return chunk.subarray(0, 8192).includes(0);
+}
+
+export async function selectScannableFiles(files: IndexedFile[]): Promise<FileSelection> {
+  const selection: FileSelection = { files: [], skipped: [] };
+  for (const file of files) {
+    if (isSensitivePath(file.relativePath)) {
+      selection.skipped.push({ file: file.relativePath, reason: "sensitive" });
+    } else if (file.size > MAX_TEXT_FILE_SIZE) {
+      selection.skipped.push({ file: file.relativePath, reason: "oversized" });
+    } else if (await isLikelyBinary(file.absolutePath)) {
+      selection.skipped.push({ file: file.relativePath, reason: "binary" });
+    } else {
+      selection.files.push(file);
+    }
+  }
+  return selection;
 }
 
 export async function createIgnoreMatcher(repositoryRoot: string) {
