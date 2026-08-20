@@ -11,3 +11,4 @@ export * from "./readme.js";
 export * from "./todos.js";
 export * from "./manifests.js";
 export * from "./findings.js";
+export * from "./scoring.js";
