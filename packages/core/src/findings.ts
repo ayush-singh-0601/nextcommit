@@ -16,7 +16,7 @@ export function isValidEvidencePath(repositoryRoot: string, evidence: Evidence):
 export function deriveCandidates(signals: Signal[]): Candidate[] {
   return signals.flatMap((signal) => {
     if (!signal.evidence) return [];
-    const category = signal.type === "unfinished-roadmap" ? "feature" : signal.type === "high-churn-file" ? "test" : "maintainability";
+    const category = signal.type === "unfinished-roadmap" ? "feature" : signal.type === "high-churn-file" ? "test" : /retry|recover|resilien|reliab/i.test(signal.value) ? "reliability" : "maintainability";
     const title = signal.type === "unfinished-roadmap" ? `Implement documented intent: ${signal.value}` : `Investigate ${signal.value}`;
     return [{
       id: createFindingId(category, signal.evidence),

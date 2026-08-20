@@ -12,4 +12,9 @@ describe("candidate derivation", () => {
     expect(isValidEvidencePath(process.cwd(), { type: "source", file: "../outside.ts", summary: "outside" })).toBe(false);
     expect(isValidEvidencePath(process.cwd(), { type: "source", file: ".env", summary: "secret" })).toBe(false);
   });
+
+  it("classifies recovery work as reliability", () => {
+    const candidates = deriveCandidates([{ type: "todo", file: "src/api.ts", line: 8, value: "Add retry after a failed request", evidence: { type: "todo", file: "src/api.ts", lineStart: 8, summary: "TODO: retry" } }]);
+    expect(candidates[0]?.category).toBe("reliability");
+  });
 });
