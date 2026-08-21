@@ -30,3 +30,4 @@ export * from "./preferences.js";
 export * from "./integrations.js";
 export * from "./github.js";
 export * from "./registries.js";
+export * from "./integration-cache.js";
