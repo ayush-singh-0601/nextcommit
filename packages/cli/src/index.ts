@@ -1,6 +1,6 @@
 import { Command } from "commander";
 import pc from "picocolors";
-import { addPortfolioRoot, completeFinding, discoverRepositories, filterByTimeBudget, globalStateDirectory, ignoreFinding, loadFindings, loadPlan, loadPortfolioConfig, parseTimeBudget, PRODUCT_NAME, RepositoryError, saveAgentAnalysis, scanRepository, type Finding, type FindingCategory, type ScanReport } from "../../core/src/index.js";
+import { addPortfolioRoot, completeFinding, discoverRepositories, filterByMode, filterByTimeBudget, globalStateDirectory, ignoreFinding, loadFindings, loadPlan, loadPortfolioConfig, parseRecommendationMode, parseTimeBudget, PRODUCT_NAME, RepositoryError, saveAgentAnalysis, scanRepository, type Finding, type FindingCategory, type ScanReport } from "../../core/src/index.js";
 
 export * from "../../core/src/index.js";
 
@@ -54,6 +54,13 @@ export async function runCli(argv = process.argv): Promise<void> {
     const report = await scanRepository(target, { persistState: false });
     const findings = filterByTimeBudget(await loadFindings(report.repository.root), parsed);
     process.stdout.write(`${findings.slice(0, 5).map(renderFinding).join("\\n") || "No verified findings fit this budget.\\n"}`);
+  });
+  program.command("mode <mode> [path]").description("show findings for a focused recommendation mode").action(async (mode, target = ".") => {
+    const parsed = parseRecommendationMode(mode);
+    if (!parsed) throw new Error("Mode must be easy, ambitious, release, or open-source");
+    const report = await scanRepository(target, { persistState: false });
+    const findings = filterByMode(await loadFindings(report.repository.root), parsed);
+    process.stdout.write(`${findings.slice(0, 5).map(renderFinding).join("\\n") || "No verified findings match this mode.\\n"}`);
   });
   program.command("init [path]").description("add a directory to the global portfolio").action(async (target = ".") => {
     const config = await addPortfolioRoot(target);
