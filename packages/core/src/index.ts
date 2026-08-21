@@ -25,3 +25,4 @@ export * from "./modes.js";
 export * from "./workspaces.js";
 export * from "./incremental.js";
 export * from "./reconcile.js";
+export * from "./migrations.js";
