@@ -20,8 +20,8 @@
   "homepage": "https://github.com/ayush-singh-0601/nextcommit#readme",
   "type": "module",
   "bin": {
-    "nextcommit": "./dist/cli/src/bin.js",
-    "nextcommit-mcp": "./dist/cli/src/mcp-bin.js"
+    "nextcommit": "dist/cli/src/bin.js",
+    "nextcommit-mcp": "dist/cli/src/mcp-bin.js"
   },
   "exports": {
     ".": {

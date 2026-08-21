@@ -1,5 +1,6 @@
 import path from "node:path";
-import { realpath } from "node:fs/promises";
+import { mkdtemp, realpath, rm } from "node:fs/promises";
+import os from "node:os";
 import { describe, expect, it } from "vitest";
 import { collectChurnSignals, collectGitMetadata, RepositoryError, resolveRepository, runGit } from "@nextcommit/core";
 
@@ -21,7 +22,12 @@ describe("Git repository resolution", () => {
     expect(signals.length).toBeLessThanOrEqual(10);
   });
 
-  it("rejects a non-Git fixture", async () => {
-    await expect(resolveRepository("tests/fixtures/python-repo")).rejects.toBeInstanceOf(RepositoryError);
+  it("rejects a directory outside any Git worktree", async () => {
+    const directory = await mkdtemp(path.join(os.tmpdir(), "nextcommit-non-git-"));
+    try {
+      await expect(resolveRepository(directory)).rejects.toBeInstanceOf(RepositoryError);
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
   });
 });
