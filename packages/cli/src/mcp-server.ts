@@ -20,6 +20,6 @@ export function createMcpHandler(tools: McpToolSet): (request: McpRequest) => Pr
 export async function startMcpServer(tools: McpToolSet, input = process.stdin, output = process.stdout): Promise<void> {
   const handle = createMcpHandler(tools);
   for await (const line of createInterface({ input, crlfDelay: Infinity })) {
-    try { output.write(`${JSON.stringify(await handle(JSON.parse(line) as McpRequest))}\\n`); } catch { output.write(`${JSON.stringify(mcpError(undefined, -32700, "Parse error"))}\\n`); }
+    try { output.write(JSON.stringify(await handle(JSON.parse(line) as McpRequest)) + String.fromCharCode(10)); } catch { output.write(JSON.stringify(mcpError(undefined, -32700, "Parse error")) + String.fromCharCode(10)); }
   }
 }
