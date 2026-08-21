@@ -23,3 +23,4 @@ export * from "./priorities.js";
 export * from "./filters.js";
 export * from "./modes.js";
 export * from "./workspaces.js";
+export * from "./incremental.js";
