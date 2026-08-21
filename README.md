@@ -10,3 +10,7 @@ NextCommit is a local-first repository intelligence CLI and Codex skill. The pro
 npm install -g nextcommit
 nextcommit scan . --json
 ```
+
+## MCP
+
+Run `nextcommit-mcp` to expose the local scanner to an MCP client. See [the MCP guide](docs/mcp.md).
