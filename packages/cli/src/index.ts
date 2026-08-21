@@ -38,7 +38,7 @@ function readStandardInput(): Promise<string> {
 
 export async function runCli(argv = process.argv): Promise<void> {
   const program = new Command();
-  program.name("nextcommit").description("Give every repository a next step.").version("0.1.1");
+  program.name("nextcommit").description("Give every repository a next step.").version("0.1.2");
   const executeScan = async (target: string, options: { json?: boolean; limit?: number }) => {
     const globalOptions = program.opts<{ json?: boolean; limit?: number }>();
     const effectiveOptions = { json: options.json ?? globalOptions.json, limit: options.limit ?? globalOptions.limit };
