@@ -26,8 +26,10 @@ export async function scanRepository(inputPath: string, options: ScanOptions = {
     { type: "test-file-count", value: String(structure.tests.length) },
   ];
   const signals = [...structuralSignals, ...readme, ...todos, ...manifests, ...churn];
+  const repositoryFingerprint = createHash("sha256").update(`${git.head ?? ""}:${indexed.map((file) => `${file.relativePath}:${file.size}`).join("|")}`).digest("hex");
   const report = ScanReportSchema.parse({
     schemaVersion: 1,
+    repositoryFingerprint,
     repository: { name: path.basename(repository.root), path: repository.inputPath, root: repository.root, git: { head: git.head, branch: git.branch, dirty: git.dirty }, ...stack },
     signals,
     candidates: deriveCandidates(signals),
@@ -35,8 +37,7 @@ export async function scanRepository(inputPath: string, options: ScanOptions = {
     scannedAt: new Date().toISOString(),
   });
   if (options.persistState) {
-    const fingerprint = createHash("sha256").update(`${git.head ?? ""}:${indexed.map((file) => `${file.relativePath}:${file.size}`).join("|")}`).digest("hex");
-    await saveState(repository.root, { version: 1, lastScan: report.scannedAt, repositoryFingerprint: fingerprint, ...(git.head ? { lastCommit: git.head } : {}) });
+    await saveState(repository.root, { version: 1, lastScan: report.scannedAt, repositoryFingerprint, ...(git.head ? { lastCommit: git.head } : {}) });
   }
   return report;
 }

@@ -36,7 +36,11 @@ function readStandardInput(): Promise<string> {
   });
 }
 
-export async function runCli(argv = process.argv): Promise<void> {
+export interface CliRuntime {
+  readInput?: () => Promise<string>;
+}
+
+export async function runCli(argv = process.argv, runtime: CliRuntime = {}): Promise<void> {
   const program = new Command();
   program.name("nextcommit").description("Give every repository a next step.").version("0.1.3");
   const executeScan = async (target: string, options: { json?: boolean; limit?: number }) => {
@@ -90,9 +94,10 @@ export async function runCli(argv = process.argv): Promise<void> {
     }
     process.stdout.write(`${JSON.stringify(await loadPreferences(), null, 2)}\\n`);
   });
-  program.command("agent ingest [path]").description("persist a verified analysis envelope from stdin").action(async (target = ".") => {
+  const agent = program.command("agent").description("work with verified agent analysis");
+  agent.command("ingest [path]").description("persist a verified analysis envelope from stdin").action(async (target = ".") => {
     const report = await scanRepository(target, { persistState: false });
-    const saved = await saveAgentAnalysis(report.repository.root, JSON.parse(await readStandardInput()));
+    const saved = await saveAgentAnalysis(report.repository.root, JSON.parse(await (runtime.readInput ?? readStandardInput)()));
     process.stdout.write(`${JSON.stringify({ findings: saved.findings.length, plans: saved.plans.length })}\n`);
   });
   program.command("ignore <id> [path]").option("--reason <reason>", "record why the finding is ignored").action(async (id, target = ".", options) => {

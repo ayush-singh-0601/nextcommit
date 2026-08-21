@@ -12,6 +12,7 @@ const DEFAULT_IGNORES = [
   "build/**",
   "coverage/**",
   ".next/**",
+  ".nextcommit/**",
   "vendor/**",
   "target/**",
   "__pycache__/**",

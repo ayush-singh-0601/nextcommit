@@ -88,6 +88,7 @@ export const AgentAnalysisEnvelopeSchema = z.object({
 
 export const ScanReportSchema = z.object({
   schemaVersion: z.literal(1),
+  repositoryFingerprint: z.string().min(1).optional(),
   repository: RepositorySchema,
   signals: z.array(SignalSchema),
   candidates: z.array(CandidateSchema),
