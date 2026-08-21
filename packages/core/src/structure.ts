@@ -13,13 +13,23 @@ export interface RepositoryStructure {
 const SOURCE_EXTENSIONS = new Set([".ts", ".tsx", ".js", ".jsx", ".py", ".rs", ".go", ".java", ".cs", ".php", ".rb"]);
 const ASSET_EXTENSIONS = new Set([".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp", ".ico"]);
 
+function isTestFile(relativePath: string): boolean {
+  return (
+    /(^|\/)(tests|__tests__)\//.test(relativePath) ||
+    /^test\//.test(relativePath) ||
+    /(^|\/)src\/test\//.test(relativePath) ||
+    /^(packages|apps)\/[^/]+\/test\//.test(relativePath) ||
+    /\.(test|spec)\.[^.]+$/.test(relativePath)
+  );
+}
+
 export function classifyRepositoryStructure(files: IndexedFile[]): RepositoryStructure {
   const structure: RepositoryStructure = { source: [], tests: [], docs: [], assets: [], config: [], scripts: [] };
   for (const file of files) {
     const normalized = file.relativePath.toLowerCase();
     const extension = path.posix.extname(normalized);
     const basename = path.posix.basename(normalized);
-    const testFile = /(^|\/)(test|tests|__tests__)\//.test(normalized) || /\.(test|spec)\.[^.]+$/.test(normalized);
+    const testFile = isTestFile(normalized);
     if (testFile) structure.tests.push(file.relativePath);
     else if (SOURCE_EXTENSIONS.has(extension)) structure.source.push(file.relativePath);
     if (basename.startsWith("readme") || extension === ".md" || normalized.includes("docs/")) structure.docs.push(file.relativePath);
