@@ -51,6 +51,37 @@ Use stable JSON in scripts and agent integrations:
 nextcommit scan . --json
 ```
 
+## What's new in 0.1.4
+
+NextCommit's Codex integration now uses a guided, evidence-first workflow:
+
+1. Scan the repository and verify candidates against the source.
+2. Present 5-6 concise issues, or fewer when the evidence does not support six.
+3. Ask you to select an issue by number or finding ID.
+4. Automatically create and persist a plan for the selected issue.
+5. Show the plan summary and wait for explicit approval before changing code.
+
+```text
+You: $nextcommit Analyze this repository and recommend what to work on next.
+
+Codex:
+1. Add regression coverage for POST /api/query
+2. Validate retrieval fallback behavior
+3. Remove duplicated workspace lookup logic
+4. Improve malformed-request diagnostics
+5. Add a query-path performance benchmark
+
+Choose an issue by number or finding ID.
+
+You: 1
+
+Codex: Plan created and saved. Review the summary, then approve implementation when ready.
+```
+
+This release also fixes `nextcommit agent ingest .` command parsing, includes a `repositoryFingerprint` in JSON scan reports, ignores `.nextcommit` state during scans, and makes the bundled skill resolve repository-local installations before relying on a global executable.
+
+Already installed? Follow [Upgrade and refresh](#upgrade-and-refresh) to update both the package and the copied Codex skill.
+
 ## What it finds
 
 - unfinished README and roadmap intent;
