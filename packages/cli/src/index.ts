@@ -8,7 +8,16 @@ export function renderReport(report: ScanReport, limit = 5): string {
   const candidates = report.candidates.slice(0, limit);
   const lines = [pc.bold(PRODUCT_NAME), "", `${report.repository.name} · ${report.repository.languages.join(" / ") || "Unknown stack"}`, "", `Signals: ${report.signals.length} · Candidates: ${report.candidates.length}`];
   if (candidates.length === 0) lines.push("", "No evidence-backed candidates yet. Run the Codex skill to verify repository signals.");
-  for (const [index, candidate] of candidates.entries()) lines.push("", `${index + 1}. ${candidate.title}`, `   ${candidate.category} · ${candidate.classification} · ~${candidate.estimatedMinutes}m`);
+  for (const [index, candidate] of candidates.entries()) {
+    const evidence = candidate.evidence[0];
+    const location = evidence ? `${evidence.file}${evidence.lineStart ? `:${evidence.lineStart}` : ""}` : "unavailable";
+    lines.push(
+      "",
+      `${index + 1}. ${candidate.title}`,
+      `   ${candidate.category} · ${candidate.classification} · ~${candidate.estimatedMinutes}m`,
+      `   Evidence: ${location}`,
+    );
+  }
   return `${lines.join("\n")}\n`;
 }
 

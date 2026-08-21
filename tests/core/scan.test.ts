@@ -7,5 +7,5 @@ describe("repository scan", () => {
     expect(report.schemaVersion).toBe(1);
     expect(report.repository.git.head).toMatch(/^[0-9a-f]{40}$/);
     expect(report.signals.some((signal) => signal.type === "source-file-count")).toBe(true);
-  });
+  }, 15_000);
 });

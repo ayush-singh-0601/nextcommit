@@ -8,6 +8,7 @@ describe("repository file index", () => {
     const files = await indexRepositoryFiles(root);
     expect(files.map((file) => file.relativePath)).toContain("src/index.ts");
     expect(files.map((file) => file.relativePath)).not.toContain(".env");
+    expect(files.map((file) => file.relativePath)).not.toContain("backend/.pytest_cache/should-ignore.json");
   });
 
   it("recognizes sensitive paths without reading their values", () => {

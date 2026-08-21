@@ -15,6 +15,7 @@ const DEFAULT_IGNORES = [
   "vendor/**",
   "target/**",
   "__pycache__/**",
+  ".pytest_cache/**",
   ".venv/**",
   "venv/**",
   "generated/**",
@@ -79,6 +80,7 @@ export async function indexRepositoryFiles(repositoryRoot: string): Promise<Inde
   const matcher = await createIgnoreMatcher(repositoryRoot);
   const candidates = await fastGlob("**/*", {
     cwd: repositoryRoot,
+    ignore: DEFAULT_IGNORES.flatMap((pattern) => [pattern, `**/${pattern}`]),
     onlyFiles: true,
     dot: true,
     followSymbolicLinks: false,
