@@ -1,6 +1,6 @@
 import { Command } from "commander";
 import pc from "picocolors";
-import { addPortfolioRoot, completeFinding, discoverRepositories, filterByMode, filterByTimeBudget, globalStateDirectory, ignoreFinding, loadFindings, loadPlan, loadPortfolioConfig, parseRecommendationMode, parseTimeBudget, PRODUCT_NAME, RepositoryError, saveAgentAnalysis, scanRepository, type Finding, type FindingCategory, type ScanReport } from "../../core/src/index.js";
+import { addPortfolioRoot, completeFinding, discoverRepositories, filterByMode, filterByTimeBudget, globalStateDirectory, ignoreFinding, loadFindings, loadPlan, loadPortfolioConfig, loadPreferences, parseRecommendationMode, parseTimeBudget, PRODUCT_NAME, RepositoryError, saveAgentAnalysis, savePreferences, scanRepository, type Finding, type FindingCategory, type ScanReport } from "../../core/src/index.js";
 
 export * from "../../core/src/index.js";
 
@@ -71,6 +71,15 @@ export async function runCli(argv = process.argv): Promise<void> {
     const repositories = (await Promise.all(config.roots.map((root) => discoverRepositories(root)))).flat();
     const unique = [...new Map(repositories.map((repository) => [repository.path, repository])).values()];
     process.stdout.write(options.json ? `${JSON.stringify({ roots: config.roots, repositories: unique }, null, 2)}\\n` : `${unique.map((repository) => repository.path).join("\\n") || "No portfolio roots configured."}\\n`);
+  });
+  program.command("preferences").description("show or set local recommendation preferences").option("--mode <mode>", "default recommendation mode").action(async (options) => {
+    const current = await loadPreferences();
+    if (options.mode) {
+      const mode = parseRecommendationMode(options.mode);
+      if (!mode) throw new Error("Mode must be easy, ambitious, release, or open-source");
+      await savePreferences({ ...current, defaultMode: mode });
+    }
+    process.stdout.write(`${JSON.stringify(await loadPreferences(), null, 2)}\\n`);
   });
   program.command("agent ingest [path]").description("persist a verified analysis envelope from stdin").action(async (target = ".") => {
     const report = await scanRepository(target, { persistState: false });
