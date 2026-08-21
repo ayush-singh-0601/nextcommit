@@ -28,3 +28,4 @@ export * from "./reconcile.js";
 export * from "./migrations.js";
 export * from "./preferences.js";
 export * from "./integrations.js";
+export * from "./github.js";
