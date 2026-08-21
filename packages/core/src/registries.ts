@@ -1,0 +1,2 @@
+export interface PackageRelease { name: string; version: string; publishedAt?: string }
+export function parseNpmRelease(value: unknown): PackageRelease | undefined { const item = value as { name?: unknown; version?: unknown; time?: Record<string, unknown> }; if (typeof item?.name !== "string" || typeof item.version !== "string") return undefined; const publishedAt = item.time?.[item.version]; return { name: item.name, version: item.version, ...(typeof publishedAt === "string" ? { publishedAt } : {}) }; }
